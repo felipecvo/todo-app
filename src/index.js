@@ -6,6 +6,10 @@ const getItems = require('./routes/getItems');
 const addItem = require('./routes/addItem');
 const updateItem = require('./routes/updateItem');
 const deleteItem = require('./routes/deleteItem');
+const getItem = require('./routes/getItem');
+const dotenv = require('dotenv');
+
+dotenv.config();
 
 app.use(express.json());
 app.use(express.static(__dirname + '/static'));
@@ -15,6 +19,7 @@ app.get('/api/items', getItems);
 app.post('/api/items', addItem);
 app.put('/api/items/:id', updateItem);
 app.delete('/api/items/:id', deleteItem);
+app.get('/api/items/:id', getItem);
 
 db.init()
     .then(() => {
