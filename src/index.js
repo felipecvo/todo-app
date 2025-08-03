@@ -1,3 +1,6 @@
+const dotenv = require('dotenv');
+dotenv.config();
+
 const express = require('express');
 const app = express();
 const db = require('./persistence');
@@ -7,9 +10,6 @@ const addItem = require('./routes/addItem');
 const updateItem = require('./routes/updateItem');
 const deleteItem = require('./routes/deleteItem');
 const getItem = require('./routes/getItem');
-const dotenv = require('dotenv');
-
-dotenv.config();
 
 app.use(express.json());
 app.use(express.static(__dirname + '/static'));

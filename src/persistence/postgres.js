@@ -18,7 +18,7 @@ async function init() {
     });
 
     return await pool.query(
-        'CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean, note text, tags text, completed_at datetime, created_at datetime) DEFAULT CHARSET utf8mb4',
+        'CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean, note text, tags text, completed_at timestamp, created_at timestamp)',
         (err) => {
             if (err) throw err;
             console.log(`Connected to postgres db at host ${HOST}`);
