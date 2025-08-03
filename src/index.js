@@ -10,9 +10,14 @@ const addItem = require('./routes/addItem');
 const updateItem = require('./routes/updateItem');
 const deleteItem = require('./routes/deleteItem');
 const getItem = require('./routes/getItem');
+const addApiKey = require('./routes/addApiKey');
+const authMiddleware = require('./middleware/auth');
+
+const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static(__dirname + '/static'));
+app.use(authMiddleware);
 
 app.get('/api/greeting', getGreeting);
 app.get('/api/items', getItems);
@@ -20,10 +25,11 @@ app.post('/api/items', addItem);
 app.put('/api/items/:id', updateItem);
 app.delete('/api/items/:id', deleteItem);
 app.get('/api/items/:id', getItem);
+app.post('/api/keys', addApiKey);
 
 db.init()
     .then(() => {
-        app.listen(3000, () => console.log('Listening on port 3000'));
+        app.listen(port, () => console.log(`Listening on port ${port}`));
     })
     .catch((err) => {
         console.error(err);
