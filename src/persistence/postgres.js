@@ -66,11 +66,11 @@ async function teardown() {
     });
 }
 
-async function getItems(apiKey) {
+async function getItems(userId) {
     return new Promise((resolve, reject) => {
         pool.query(
             'SELECT id, name, completed, note, tags, completed_at, created_at FROM todo_items WHERE user_id=$1',
-            [apiKey],
+            [userId],
             (err, res) => {
                 if (err) return reject(err);
                 resolve(
@@ -86,11 +86,11 @@ async function getItems(apiKey) {
     });
 }
 
-async function getItem(id, apiKey) {
+async function getItem(id, userId) {
     return new Promise((resolve, reject) => {
         pool.query(
             'SELECT id, name, completed, note, tags, completed_at, created_at FROM todo_items WHERE id=$1 AND user_id=$2',
-            [id, apiKey],
+            [id, userId],
             (err, res) => {
                 if (err) return reject(err);
                 resolve(
@@ -106,7 +106,7 @@ async function getItem(id, apiKey) {
     });
 }
 
-async function storeItem(item, apiKey) {
+async function storeItem(item, userId) {
     return new Promise((resolve, reject) => {
         pool.query(
             'INSERT INTO todo_items (id, name, completed, note, tags, completed_at, created_at, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
@@ -118,7 +118,7 @@ async function storeItem(item, apiKey) {
                 item.tags ? item.tags.join(',') : null,
                 item.completed_at,
                 item.created_at,
-                apiKey,
+                userId,
             ],
             (err, res) => {
                 if (err) return reject(err);
@@ -128,7 +128,7 @@ async function storeItem(item, apiKey) {
     });
 }
 
-async function updateItem(id, item, apiKey) {
+async function updateItem(id, item, userId) {
     return new Promise((resolve, reject) => {
         pool.query(
             'UPDATE todo_items SET name=$1, completed=$2, note=$3, tags=$4, completed_at=$5 WHERE id=$6 AND user_id=$7',
@@ -139,7 +139,7 @@ async function updateItem(id, item, apiKey) {
                 item.tags ? item.tags.join(',') : null,
                 item.completed ? new Date().toISOString() : null,
                 id,
-                apiKey,
+                userId,
             ],
             (err, res) => {
                 if (err) return reject(err);
@@ -149,11 +149,11 @@ async function updateItem(id, item, apiKey) {
     });
 }
 
-async function removeItem(id, apiKey) {
+async function removeItem(id, userId) {
     return new Promise((resolve, reject) => {
         pool.query(
             'DELETE FROM todo_items WHERE id=$1 AND user_id=$2',
-            [id, apiKey],
+            [id, userId],
             (err, res) => {
                 if (err) return reject(err);
                 resolve();
@@ -226,6 +226,20 @@ async function storeUser(item) {
     });
 }
 
+async function getUserByCredentials(username, password_hash, apiKeyId) {
+    return new Promise((resolve, reject) => {
+        pool.query(
+            'SELECT * FROM users WHERE email=$1 AND password_hash=$2 AND api_key_id=$3',
+            [username, password_hash, apiKeyId],
+            (err, res) => {
+                if (err) return reject(err);
+                const row = res.rows[0];
+                resolve(row);
+            },
+        );
+    });
+}
+
 module.exports = {
     init,
     teardown,
@@ -238,4 +252,5 @@ module.exports = {
     getApiKey,
     getApiKeyByStudentId,
     storeUser,
+    getUserByCredentials,
 };

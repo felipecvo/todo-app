@@ -15,7 +15,7 @@ module.exports = async (req, res) => {
         created_at: new Date().toISOString(),
     };
 
-    await db.storeItem(item, req.apiKey.id);
+    await db.storeItem(item, req.userId);
 
     res.send(item);
 };

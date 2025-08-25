@@ -31,7 +31,12 @@ module.exports = async (req, res) => {
     try {
         await db.storeUser(user);
 
-        const { created_at, api_key_id, ...userWithoutSensitive } = user;
+        const {
+            created_at,
+            api_key_id,
+            password_hash,
+            ...userWithoutSensitive
+        } = user;
         res.send(userWithoutSensitive);
     } catch (error) {
         if (error.code === '23505') {

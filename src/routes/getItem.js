@@ -1,7 +1,7 @@
 const db = require('../persistence');
 
 module.exports = async (req, res) => {
-    const item = await db.getItem(req.params.id, req.apiKey.id);
+    const item = await db.getItem(req.params.id, req.userId);
     if (item) {
         res.send(item);
     } else {

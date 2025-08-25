@@ -28,6 +28,7 @@ app.get('/api/items/:id', jwtAuth, getItem);
 app.post('/api/keys', addApiKey);
 
 app.post('/api/users', apiTokenAuth, require('./routes/addUser'));
+app.post('/api/login', apiTokenAuth, require('./routes/login'));
 
 db.init()
     .then(() => {
