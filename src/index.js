@@ -20,6 +20,7 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 app.use(express.static(__dirname + '/static'));
+app.use('/api-docs', express.static('openapi.yaml'));
 
 app.get('/api/greeting', getGreeting);
 app.get('/api/items', jwtAuth, getItems);
