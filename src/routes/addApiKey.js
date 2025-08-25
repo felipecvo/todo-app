@@ -1,5 +1,6 @@
 const db = require('../persistence');
 const { v4: uuid } = require('uuid');
+const { hashPassword } = require('../utils/password');
 
 module.exports = async (req, res) => {
     if (
@@ -9,16 +10,36 @@ module.exports = async (req, res) => {
         return res.status(401).send({ message: 'API key is required' });
     }
 
-    if (!req.body || !req.body.user_id) {
-        return res.status(400).send({ message: 'User ID is required' });
+    if (!req.body || !req.body.student_id) {
+        return res.status(400).send({ message: 'Student ID is required' });
+    }
+
+    if (!req.body.secret) {
+        return res.status(400).send({ message: 'Secret is required' });
+    }
+
+    if (req.body.secret.length < 6) {
+        return res
+            .status(400)
+            .send({ message: 'Secret must be at least 6 characters long' });
     }
 
     const key = {
         id: uuid(),
         api_key: uuid(),
-        user_id: req.body.user_id,
+        student_id: req.body.student_id,
+        password_hash: await hashPassword(req.body.secret),
     };
 
-    await db.storeApiKey(key);
-    res.send({ api_key: key.api_key });
+    const existent = await db.getApiKeyByStudentId(
+        key.student_id,
+        key.password_hash,
+    );
+
+    if (existent) {
+        res.send({ api_key: existent.api_key });
+    } else {
+        await db.storeApiKey(key);
+        res.send({ api_key: key.api_key });
+    }
 };

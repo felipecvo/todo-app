@@ -19,14 +19,38 @@ async function init() {
         port: PORT,
     });
 
-    return await pool.query(
-        'CREATE TABLE IF NOT EXISTS todo_items (id varchar(36), name varchar(255), completed boolean, note text, tags text, completed_at timestamp, created_at timestamp, api_key varchar(36));' +
-            'CREATE TABLE IF NOT EXISTS api_keys (id varchar(36), key varchar(36), user_id varchar(255), created_at timestamp);',
-        (err) => {
-            if (err) throw err;
-            console.log(`Connected to postgres db at host ${HOST}`);
-        },
-    );
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS users (
+            id varchar(36) PRIMARY KEY,
+            name varchar(255),
+            email varchar(255),
+            password_hash varchar(255),
+            api_key_id varchar(36),
+            created_at timestamp
+        );
+    `);
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS todo_items (
+            id varchar(36) PRIMARY KEY,
+            name varchar(255),
+            completed boolean,
+            note text,
+            tags text,
+            completed_at timestamp,
+            created_at timestamp,
+            user_id varchar(36)
+        );
+    `);
+    await pool.query(`
+        CREATE TABLE IF NOT EXISTS api_keys (
+            id varchar(36) PRIMARY KEY,
+            key varchar(36),
+            student_id varchar(255),
+            password_hash varchar(255),
+            created_at timestamp
+        );
+    `);
+    console.log(`Connected to postgres db at host ${HOST}`);
 }
 
 async function teardown() {
@@ -41,7 +65,7 @@ async function teardown() {
 async function getItems(apiKey) {
     return new Promise((resolve, reject) => {
         pool.query(
-            'SELECT id, name, completed, note, tags, completed_at, created_at FROM todo_items WHERE api_key=$1',
+            'SELECT id, name, completed, note, tags, completed_at, created_at FROM todo_items WHERE user_id=$1',
             [apiKey],
             (err, res) => {
                 if (err) return reject(err);
@@ -61,7 +85,7 @@ async function getItems(apiKey) {
 async function getItem(id, apiKey) {
     return new Promise((resolve, reject) => {
         pool.query(
-            'SELECT id, name, completed, note, tags, completed_at, created_at FROM todo_items WHERE id=$1 AND api_key=$2',
+            'SELECT id, name, completed, note, tags, completed_at, created_at FROM todo_items WHERE id=$1 AND user_id=$2',
             [id, apiKey],
             (err, res) => {
                 if (err) return reject(err);
@@ -81,7 +105,7 @@ async function getItem(id, apiKey) {
 async function storeItem(item, apiKey) {
     return new Promise((resolve, reject) => {
         pool.query(
-            'INSERT INTO todo_items (id, name, completed, note, tags, completed_at, created_at, api_key) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+            'INSERT INTO todo_items (id, name, completed, note, tags, completed_at, created_at, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
             [
                 item.id,
                 item.name,
@@ -103,7 +127,7 @@ async function storeItem(item, apiKey) {
 async function updateItem(id, item, apiKey) {
     return new Promise((resolve, reject) => {
         pool.query(
-            'UPDATE todo_items SET name=$1, completed=$2, note=$3, tags=$4, completed_at=$5 WHERE id=$6 AND api_key=$7',
+            'UPDATE todo_items SET name=$1, completed=$2, note=$3, tags=$4, completed_at=$5 WHERE id=$6 AND user_id=$7',
             [
                 item.name,
                 item.completed,
@@ -124,7 +148,7 @@ async function updateItem(id, item, apiKey) {
 async function removeItem(id, apiKey) {
     return new Promise((resolve, reject) => {
         pool.query(
-            'DELETE FROM todo_items WHERE id=$1 AND api_key=$2',
+            'DELETE FROM todo_items WHERE id=$1 AND user_id=$2',
             [id, apiKey],
             (err, res) => {
                 if (err) return reject(err);
@@ -137,11 +161,12 @@ async function removeItem(id, apiKey) {
 async function storeApiKey(apiKey) {
     return new Promise((resolve, reject) => {
         pool.query(
-            'INSERT INTO api_keys (id, key, user_id, created_at) VALUES ($1, $2, $3, $4)',
+            'INSERT INTO api_keys (id, key, student_id, password_hash, created_at) VALUES ($1, $2, $3, $4, $5)',
             [
                 apiKey.id,
                 apiKey.api_key,
-                apiKey.user_id,
+                apiKey.student_id,
+                apiKey.password_hash,
                 new Date().toISOString(),
             ],
             (err, res) => {
@@ -162,6 +187,20 @@ async function getApiKey(key) {
     });
 }
 
+async function getApiKeyByStudentId(studentId, password) {
+    return new Promise((resolve, reject) => {
+        pool.query(
+            'SELECT * FROM api_keys WHERE student_id=$1 AND password_hash=$2',
+            [studentId, password],
+            (err, res) => {
+                if (err) return reject(err);
+                const row = res.rows[0];
+                resolve(row);
+            },
+        );
+    });
+}
+
 module.exports = {
     init,
     teardown,
@@ -172,4 +211,5 @@ module.exports = {
     removeItem,
     storeApiKey,
     getApiKey,
+    getApiKeyByStudentId,
 };
