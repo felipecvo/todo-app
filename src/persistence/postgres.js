@@ -30,6 +30,9 @@ async function init() {
         );
     `);
     await pool.query(`
+        CREATE UNIQUE INDEX IF NOT EXISTS users_email_api_key_id_idx ON users(email, api_key_id);
+    `);
+    await pool.query(`
         CREATE TABLE IF NOT EXISTS todo_items (
             id varchar(36) PRIMARY KEY,
             name varchar(255),
@@ -201,6 +204,26 @@ async function getApiKeyByStudentId(studentId, password) {
     });
 }
 
+async function storeUser(item) {
+    return new Promise((resolve, reject) => {
+        pool.query(
+            'INSERT INTO users (id, name, email, password_hash, api_key_id, created_at) VALUES ($1, $2, $3, $4, $5, $6)',
+            [
+                item.id,
+                item.name,
+                item.email,
+                item.password_hash,
+                item.api_key_id,
+                new Date().toISOString(),
+            ],
+            (err, res) => {
+                if (err) return reject(err);
+                resolve();
+            },
+        );
+    });
+}
+
 module.exports = {
     init,
     teardown,
@@ -212,4 +235,5 @@ module.exports = {
     storeApiKey,
     getApiKey,
     getApiKeyByStudentId,
+    storeUser,
 };

@@ -11,21 +11,23 @@ const updateItem = require('./routes/updateItem');
 const deleteItem = require('./routes/deleteItem');
 const getItem = require('./routes/getItem');
 const addApiKey = require('./routes/addApiKey');
-const authMiddleware = require('./middleware/auth');
+const apiTokenAuth = require('./middleware/apiTokenAuth');
+const jwtAuth = require('./middleware/jwtAuth');
 
 const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static(__dirname + '/static'));
-app.use(authMiddleware);
 
 app.get('/api/greeting', getGreeting);
-app.get('/api/items', getItems);
-app.post('/api/items', addItem);
-app.put('/api/items/:id', updateItem);
-app.delete('/api/items/:id', deleteItem);
-app.get('/api/items/:id', getItem);
+app.get('/api/items', jwtAuth, getItems);
+app.post('/api/items', jwtAuth, addItem);
+app.put('/api/items/:id', jwtAuth, updateItem);
+app.delete('/api/items/:id', jwtAuth, deleteItem);
+app.get('/api/items/:id', jwtAuth, getItem);
 app.post('/api/keys', addApiKey);
+
+app.post('/api/users', apiTokenAuth, require('./routes/addUser'));
 
 db.init()
     .then(() => {

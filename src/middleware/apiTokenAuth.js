@@ -1,13 +1,6 @@
 const db = require('../persistence');
 
 module.exports = async (req, res, next) => {
-    console.log(`Request URL: ${req.method} ${req.url}`);
-    if (req.url === '/api/keys' && req.method === 'POST') {
-        return next();
-    }
-    if (req.url === '/api/greeting' && req.method === 'GET') {
-        return next();
-    }
     const header = req.headers['authorization'];
     if (!header || !header.startsWith('Bearer ')) {
         return res
