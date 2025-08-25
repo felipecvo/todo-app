@@ -24,6 +24,7 @@ async function init() {
             id varchar(36) PRIMARY KEY,
             name varchar(255),
             email varchar(255),
+            subscription varchar(255),
             password_hash varchar(255),
             api_key_id varchar(36),
             created_at timestamp
@@ -207,12 +208,13 @@ async function getApiKeyByStudentId(studentId, password) {
 async function storeUser(item) {
     return new Promise((resolve, reject) => {
         pool.query(
-            'INSERT INTO users (id, name, email, password_hash, api_key_id, created_at) VALUES ($1, $2, $3, $4, $5, $6)',
+            'INSERT INTO users (id, name, email, password_hash, subscription, api_key_id, created_at) VALUES ($1, $2, $3, $4, $5, $6, $7)',
             [
                 item.id,
                 item.name,
                 item.email,
                 item.password_hash,
+                item.subscription,
                 item.api_key_id,
                 new Date().toISOString(),
             ],

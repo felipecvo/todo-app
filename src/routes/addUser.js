@@ -23,6 +23,7 @@ module.exports = async (req, res) => {
         name: req.body.name,
         email: req.body.email,
         password_hash: await hashPassword(req.body.password),
+        subscription: 'basic',
         api_key_id: req.apiKey.id,
         created_at: new Date().toISOString(),
     };
