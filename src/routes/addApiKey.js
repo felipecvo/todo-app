@@ -37,7 +37,7 @@ module.exports = async (req, res) => {
     );
 
     if (existent) {
-        res.send({ api_key: existent.api_key });
+        res.send({ api_key: existent.key });
     } else {
         await db.storeApiKey(key);
         res.send({ api_key: key.api_key });

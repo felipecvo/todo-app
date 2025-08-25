@@ -1,7 +1,8 @@
 const bcrypt = require('bcrypt');
 
 async function hashPassword(plainPassword) {
-    const salt = await bcrypt.genSalt(10);
+    const salt = process.env.BCRYPT_SALT || (await bcrypt.genSalt(10));
+    console.log('salt: ', salt);
     return bcrypt.hash(plainPassword, salt);
 }
 
