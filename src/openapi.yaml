@@ -1,0 +1,195 @@
+openapi: 3.0.0
+info:
+  title: Todo App API
+  version: 1.0.0
+  description: A simple Todo App API with authentication
+servers:
+  - url: /
+    description: Current server
+paths:
+  /api/greeting:
+    get:
+      summary: Get a greeting
+      responses:
+        '200':
+          description: A successful greeting
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  greeting:
+                    type: string
+                    example: Hello world!
+  /api/items:
+    get:
+      summary: Get all items
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: A list of todo items
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Item'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      summary: Add a new item
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - name
+              properties:
+                name:
+                  type: string
+                note:
+                  type: string
+                tags:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        '200':
+          description: The created item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '400':
+          description: Bad request
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/items/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: string
+    get:
+      summary: Get an item by ID
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: The requested item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '404':
+          description: Item not found
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    put:
+      summary: Update an item
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                completed:
+                  type: boolean
+      responses:
+        '200':
+          description: The updated item
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Item'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    delete:
+      summary: Delete an item
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Item deleted
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+  /api/keys:
+    post:
+      summary: Create a new API key
+      parameters:
+        - in: header
+          name: x-api-key
+          schema:
+            type: string
+          required: true
+          description: Master API key
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - user_id
+              properties:
+                user_id:
+                  type: string
+      responses:
+        '200':
+          description: The created API key
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  api_key:
+                    type: string
+        '400':
+          description: User ID is required
+        '401':
+          description: API key is required
+components:
+  schemas:
+    Item:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        completed:
+          type: boolean
+        note:
+          type: string
+        tags:
+          type: array
+          items:
+            type: string
+        created_at:
+          type: string
+          format: date-time
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  responses:
+    UnauthorizedError:
+      description: Authorization header is required or invalid
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string

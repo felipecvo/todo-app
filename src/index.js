@@ -3,6 +3,9 @@ dotenv.config();
 
 const express = require('express');
 const app = express();
+const swaggerUi = require('swagger-ui-express');
+const YAML = require('yamljs');
+const swaggerDocument = YAML.load(__dirname + '/openapi.yaml');
 const db = require('./persistence');
 const getGreeting = require('./routes/getGreeting');
 const getItems = require('./routes/getItems');
@@ -17,6 +20,7 @@ const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.static(__dirname + '/static'));
+app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use(authMiddleware);
 
 app.get('/api/greeting', getGreeting);
