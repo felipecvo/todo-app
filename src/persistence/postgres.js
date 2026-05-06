@@ -6,6 +6,7 @@ const {
     POSTGRES_PASSWORD: PASSWORD,
     POSTGRES_DB: DB,
     POSTGRES_PORT: PORT = 5432,
+    POSTGRES_SSL_REQUIRE,
 } = process.env;
 
 let pool;
@@ -17,6 +18,10 @@ async function init() {
         database: DB,
         password: PASSWORD,
         port: PORT,
+        ssl:
+            POSTGRES_SSL_REQUIRE === 'true'
+                ? { rejectUnauthorized: false }
+                : false,
     });
 
     return await pool.query(
